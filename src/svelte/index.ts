@@ -19,6 +19,7 @@ export type RouletteStore<T> = {
     setSegments: (segments: RouletteConfig<T>["segments"]) => void;
 };
 
+/** Svelte store wrapper around the headless roulette engine. */
 export const createRouletteStore = <T>(
     config: RouletteConfig<T>,
 ): RouletteStore<T> => {

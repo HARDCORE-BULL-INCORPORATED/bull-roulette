@@ -48,6 +48,7 @@ const pickRandomIntInclusive = (
     return Math.floor(rng() * (high - low + 1)) + low;
 };
 
+/** Select an index using segment weights (negative weights are treated as 0). */
 export const selectWeightedIndex = <T>(
     segments: Segment<T>[],
     rng: () => number,
@@ -103,6 +104,7 @@ const indexFromAlignmentAngle = (
     return rounded < 0 ? rounded + segmentCount : rounded;
 };
 
+/** Create an initial roulette state from config. */
 export const createInitialState = <T>(
     config: RouletteConfig<T>,
 ): RouletteState<T> => {
@@ -119,6 +121,10 @@ export const createInitialState = <T>(
     };
 };
 
+/**
+ * Compute a spin plan (winner, target angle, duration, rotations).
+ * Does not mutate state.
+ */
 export const planSpin = <T>(
     state: RouletteState<T>,
     config: RouletteConfig<T>,
@@ -188,6 +194,7 @@ export const planSpin = <T>(
     };
 };
 
+/** Start a spin using a precomputed plan. */
 export const beginSpin = <T>(
     state: RouletteState<T>,
     plan: SpinPlan,
@@ -201,6 +208,7 @@ export const beginSpin = <T>(
     winningIndex: plan.winningIndex,
 });
 
+/** Advance the spin state by deltaMs (controlled mode). */
 export const step = <T>(
     state: RouletteState<T>,
     config: RouletteConfig<T>,

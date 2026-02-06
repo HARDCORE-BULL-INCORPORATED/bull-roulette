@@ -8,6 +8,7 @@ import type {
 } from "./types";
 import { beginSpin, createInitialState, planSpin, step } from "./state";
 
+/** Create an imperative roulette engine instance. */
 export const createRouletteEngine = <T>(
 	config: RouletteConfig<T>,
 ): RouletteEngine<T> => {

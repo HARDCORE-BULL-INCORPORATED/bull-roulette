@@ -35,6 +35,7 @@ const applyConfig = <T>(
     target.rng = source.rng;
 };
 
+/** React hook wrapper around the headless roulette engine. */
 export const useRoulette = <T>(
     config: RouletteConfig<T>,
 ): UseRouletteResult<T> => {
