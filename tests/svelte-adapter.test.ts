@@ -17,7 +17,12 @@ describe("svelte adapter", () => {
       states.push(state.phase);
     });
 
-    store.spin({ targetIndex: 1, durationMs: 200, minRotations: 1, maxRotations: 1 });
+    store.spin({
+      targetIndex: 1,
+      durationMs: 200,
+      minRotations: 1,
+      maxRotations: 1,
+    });
     store.tick(100);
     store.tick(100);
 
