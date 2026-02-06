@@ -1,47 +1,53 @@
 import { readable } from "svelte/store";
 import type {
-	RouletteConfig,
-	RouletteEngine,
-	RouletteEvent,
-	RouletteState,
-	SpinOptions,
-	SpinPlan,
+    RouletteConfig,
+    RouletteEngine,
+    RouletteEvent,
+    RouletteState,
+    SpinOptions,
+    SpinPlan,
 } from "../core/types";
 import { createRouletteEngine } from "../core/engine";
 
 export type RouletteStore<T> = {
-	subscribe: (run: (state: RouletteState<T>) => void) => () => void;
-	engine: RouletteEngine<T>;
-	spin: (options?: SpinOptions) => SpinPlan;
-	stopAt: (index: number) => SpinPlan;
-	tick: (deltaMs: number) => RouletteState<T>;
-	getState: () => RouletteState<T>;
-	setSegments: (segments: RouletteConfig<T>["segments"]) => void;
+    subscribe: (run: (state: RouletteState<T>) => void) => () => void;
+    engine: RouletteEngine<T>;
+    spin: (options?: SpinOptions) => SpinPlan;
+    stopAt: (index: number) => SpinPlan;
+    tick: (deltaMs: number) => RouletteState<T>;
+    getState: () => RouletteState<T>;
+    setSegments: (segments: RouletteConfig<T>["segments"]) => void;
 };
 
-export const createRouletteStore = <T>(config: RouletteConfig<T>): RouletteStore<T> => {
-	const engine = createRouletteEngine(config);
+export const createRouletteStore = <T>(
+    config: RouletteConfig<T>,
+): RouletteStore<T> => {
+    const engine = createRouletteEngine(config);
 
-	const store = readable<RouletteState<T>>(engine.getState(), (set) => {
-		const unsubscribe = engine.subscribe((event: RouletteEvent<T>) => {
-			if (event.type === "spin:tick" || event.type === "spin:start" || event.type === "spin:complete") {
-				set(event.state);
-			}
-		});
+    const store = readable<RouletteState<T>>(engine.getState(), (set) => {
+        const unsubscribe = engine.subscribe((event: RouletteEvent<T>) => {
+            if (
+                event.type === "spin:tick" ||
+                event.type === "spin:start" ||
+                event.type === "spin:complete"
+            ) {
+                set(event.state);
+            }
+        });
 
-		return () => {
-			unsubscribe();
-			engine.dispose();
-		};
-	});
+        return () => {
+            unsubscribe();
+            engine.dispose();
+        };
+    });
 
-	return {
-		subscribe: store.subscribe,
-		engine,
-		spin: engine.spin,
-		stopAt: engine.stopAt,
-		tick: engine.tick,
-		getState: engine.getState,
-		setSegments: engine.setSegments,
-	};
+    return {
+        subscribe: store.subscribe,
+        engine,
+        spin: engine.spin,
+        stopAt: engine.stopAt,
+        tick: engine.tick,
+        getState: engine.getState,
+        setSegments: engine.setSegments,
+    };
 };
