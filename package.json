@@ -40,7 +40,9 @@
         "build:cjs:pkg": "printf '{\"type\":\"commonjs\"}' > dist/cjs/package.json",
         "build:types": "tsc -p tsconfig.build.json",
         "build": "bun run build:esm && bun run build:cjs && bun run build:cjs:pkg && bun run build:types",
-        "test": "bun test"
+        "test": "bun test",
+        "lint": "oxlint",
+        "lint:fix": "oxlint --fix"
     },
     "peerDependencies": {
         "react": ">=18",
@@ -58,6 +60,7 @@
         "@types/bun": "latest",
         "@types/react": "^18.0.0",
         "@types/react-dom": "^18.0.0",
+        "oxlint": "^1.43.0",
         "react": "^18.0.0",
         "react-dom": "^18.0.0",
         "svelte": "^4.0.0",
