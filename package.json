@@ -34,13 +34,14 @@
         "LICENSE"
     ],
     "sideEffects": false,
-    "scripts": {
-        "build:esm": "bun build src/index.ts src/core/index.ts src/react/index.ts src/svelte/index.ts --outdir dist/esm --format=esm --external react --external svelte --external svelte/store",
-        "build:cjs": "bun build src/index.ts src/core/index.ts src/react/index.ts src/svelte/index.ts --outdir dist/cjs --format=cjs --external react --external svelte --external svelte/store",
-        "build:cjs:pkg": "printf '{\"type\":\"commonjs\"}' > dist/cjs/package.json",
-        "build:types": "tsc -p tsconfig.build.json",
-        "build": "bun run build:esm && bun run build:cjs && bun run build:cjs:pkg && bun run build:types"
-    },
+  "scripts": {
+    "build:esm": "bun build src/index.ts src/core/index.ts src/react/index.ts src/svelte/index.ts --outdir dist/esm --format=esm --external react --external svelte --external svelte/store",
+    "build:cjs": "bun build src/index.ts src/core/index.ts src/react/index.ts src/svelte/index.ts --outdir dist/cjs --format=cjs --external react --external svelte --external svelte/store",
+    "build:cjs:pkg": "printf '{\"type\":\"commonjs\"}' > dist/cjs/package.json",
+    "build:types": "tsc -p tsconfig.build.json",
+    "build": "bun run build:esm && bun run build:cjs && bun run build:cjs:pkg && bun run build:types",
+    "test": "bun test"
+  },
     "peerDependencies": {
         "react": ">=18",
         "svelte": ">=3"
