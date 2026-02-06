@@ -1,0 +1,76 @@
+#root {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 2.5rem 1.5rem 4rem;
+}
+
+.app {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.header h1 {
+  margin: 0 0 0.25rem;
+  font-size: 2rem;
+}
+
+.header p {
+  margin: 0;
+  color: #555;
+}
+
+.controls {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.controls button {
+  padding: 0.6rem 1rem;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  background: #fff;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.controls button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.status {
+  display: grid;
+  gap: 0.25rem;
+  padding: 1rem;
+  background: #f7f7f7;
+  border-radius: 10px;
+}
+
+.segments {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  gap: 0.75rem;
+}
+
+.segment {
+  padding: 0.75rem 1rem;
+  border-radius: 10px;
+  border: 1px solid #e0e0e0;
+  display: flex;
+  justify-content: space-between;
+}
+
+.segment.winner {
+  border-color: #111;
+  background: #ffe9c5;
+}
+
+.weight {
+  color: #666;
+  font-size: 0.9rem;
+}
