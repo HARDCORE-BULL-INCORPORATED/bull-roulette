@@ -18,20 +18,20 @@ bun add roulette
 import { createRouletteEngine } from "roulette";
 
 const engine = createRouletteEngine({
-	segments: [
-		{ id: "a", weight: 1 },
-		{ id: "b", weight: 2 },
-		{ id: "c", weight: 3 },
-	],
-	durationMs: 4000,
-	minRotations: 3,
-	maxRotations: 5,
+    segments: [
+        { id: "a", weight: 1 },
+        { id: "b", weight: 2 },
+        { id: "c", weight: 3 },
+    ],
+    durationMs: 4000,
+    minRotations: 3,
+    maxRotations: 5,
 });
 
 engine.subscribe((event) => {
-	if (event.type === "spin:complete") {
-		console.log("Winner index:", event.state.winningIndex);
-	}
+    if (event.type === "spin:complete") {
+        console.log("Winner index:", event.state.winningIndex);
+    }
 });
 
 engine.spin();
@@ -74,8 +74,8 @@ Provide a `seed` for deterministic spins:
 
 ```ts
 const engine = createRouletteEngine({
-	segments: [{ id: "a" }, { id: "b" }],
-	seed: "my-seed",
+    segments: [{ id: "a" }, { id: "b" }],
+    seed: "my-seed",
 });
 ```
 

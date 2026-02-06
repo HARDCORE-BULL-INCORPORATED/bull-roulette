@@ -12,60 +12,60 @@
 
 ```ts
 export type Segment<T = unknown> = {
-  id: string;
-  label?: string;
-  weight?: number; // defaults to 1
-  data?: T;
+    id: string;
+    label?: string;
+    weight?: number; // defaults to 1
+    data?: T;
 };
 
 export type RouletteConfig<T = unknown> = {
-  segments: Segment<T>[];
-  // Rotation behavior
-  minRotations?: number; // default 3
-  maxRotations?: number; // default 6
-  rotationDirection?: 1 | -1; // 1 = clockwise (default)
-  pointerAngle?: number; // degrees, default 0
-  startAngle?: number; // initial wheel angle in degrees, default 0
-  // Timing / easing
-  durationMs?: number; // default 6000
-  easing?: (t: number) => number; // t in [0..1]
-  // Jitter
-  jitterFactor?: number; // 0..1, default 0.3 (portion of segment angle)
-  // RNG
-  seed?: number | string; // if provided, use deterministic RNG
-  rng?: () => number; // overrides seed if provided
+    segments: Segment<T>[];
+    // Rotation behavior
+    minRotations?: number; // default 3
+    maxRotations?: number; // default 6
+    rotationDirection?: 1 | -1; // 1 = clockwise (default)
+    pointerAngle?: number; // degrees, default 0
+    startAngle?: number; // initial wheel angle in degrees, default 0
+    // Timing / easing
+    durationMs?: number; // default 6000
+    easing?: (t: number) => number; // t in [0..1]
+    // Jitter
+    jitterFactor?: number; // 0..1, default 0.3 (portion of segment angle)
+    // RNG
+    seed?: number | string; // if provided, use deterministic RNG
+    rng?: () => number; // overrides seed if provided
 };
 
 export type SpinOptions = {
-  targetIndex?: number; // force winner
-  targetAngle?: number; // base alignment angle in degrees (mod 360)
-  durationMs?: number; // overrides config duration
-  minRotations?: number; // overrides config
-  maxRotations?: number; // overrides config
+    targetIndex?: number; // force winner
+    targetAngle?: number; // base alignment angle in degrees (mod 360)
+    durationMs?: number; // overrides config duration
+    minRotations?: number; // overrides config
+    maxRotations?: number; // overrides config
 };
 
 export type RouletteState<T = unknown> = {
-  phase: "idle" | "spinning" | "stopped";
-  angle: number; // degrees
-  elapsedMs: number;
-  durationMs: number;
-  spinStartAngle: number;
-  targetAngle: number | null;
-  winningIndex: number | null;
-  segments: Segment<T>[];
+    phase: "idle" | "spinning" | "stopped";
+    angle: number; // degrees
+    elapsedMs: number;
+    durationMs: number;
+    spinStartAngle: number;
+    targetAngle: number | null;
+    winningIndex: number | null;
+    segments: Segment<T>[];
 };
 
 export type SpinPlan = {
-  winningIndex: number;
-  targetAngle: number; // degrees
-  durationMs: number;
-  rotations: number;
+    winningIndex: number;
+    targetAngle: number; // degrees
+    durationMs: number;
+    rotations: number;
 };
 
 export type RouletteEvent<T = unknown> =
-  | { type: "spin:start"; state: RouletteState<T> }
-  | { type: "spin:tick"; state: RouletteState<T> }
-  | { type: "spin:complete"; state: RouletteState<T> };
+    | { type: "spin:start"; state: RouletteState<T> }
+    | { type: "spin:tick"; state: RouletteState<T> }
+    | { type: "spin:complete"; state: RouletteState<T> };
 ```
 
 ## Controlled Mode API
@@ -74,40 +74,34 @@ export type RouletteEvent<T = unknown> =
 export function createInitialState<T>(config: RouletteConfig<T>): RouletteState<T>;
 
 export function planSpin<T>(
-  state: RouletteState<T>,
-  config: RouletteConfig<T>,
-  options?: SpinOptions,
+    state: RouletteState<T>,
+    config: RouletteConfig<T>,
+    options?: SpinOptions,
 ): SpinPlan;
 
-export function beginSpin<T>(
-  state: RouletteState<T>,
-  plan: SpinPlan,
-): RouletteState<T>;
+export function beginSpin<T>(state: RouletteState<T>, plan: SpinPlan): RouletteState<T>;
 
 export function step<T>(
-  state: RouletteState<T>,
-  config: RouletteConfig<T>,
-  deltaMs: number,
+    state: RouletteState<T>,
+    config: RouletteConfig<T>,
+    deltaMs: number,
 ): RouletteState<T>;
 
-export function selectWeightedIndex<T>(
-  segments: Segment<T>[],
-  rng: () => number,
-): number;
+export function selectWeightedIndex<T>(segments: Segment<T>[], rng: () => number): number;
 ```
 
 ## Imperative Engine API
 
 ```ts
 export function createRouletteEngine<T>(config: RouletteConfig<T>): {
-  getState(): RouletteState<T>;
-  setState(next: RouletteState<T>): void;
-  setSegments(segments: Segment<T>[]): void;
-  spin(options?: SpinOptions): SpinPlan;
-  stopAt(index: number): SpinPlan;
-  tick(deltaMs: number): RouletteState<T>;
-  subscribe(listener: (event: RouletteEvent<T>) => void): () => void;
-  dispose(): void;
+    getState(): RouletteState<T>;
+    setState(next: RouletteState<T>): void;
+    setSegments(segments: Segment<T>[]): void;
+    spin(options?: SpinOptions): SpinPlan;
+    stopAt(index: number): SpinPlan;
+    tick(deltaMs: number): RouletteState<T>;
+    subscribe(listener: (event: RouletteEvent<T>) => void): () => void;
+    dispose(): void;
 };
 ```
 
