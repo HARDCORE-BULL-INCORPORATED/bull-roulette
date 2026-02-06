@@ -46,6 +46,17 @@ export type SpinPlan = {
 };
 
 export type RouletteEvent<T = unknown> =
-    | { type: "spin:start"; state: RouletteState<T> }
-    | { type: "spin:tick"; state: RouletteState<T> }
-    | { type: "spin:complete"; state: RouletteState<T> };
+	| { type: "spin:start"; state: RouletteState<T> }
+	| { type: "spin:tick"; state: RouletteState<T> }
+	| { type: "spin:complete"; state: RouletteState<T> };
+
+export type RouletteEngine<T = unknown> = {
+	getState(): RouletteState<T>;
+	setState(next: RouletteState<T>): void;
+	setSegments(segments: Segment<T>[]): void;
+	spin(options?: SpinOptions): SpinPlan;
+	stopAt(index: number): SpinPlan;
+	tick(deltaMs: number): RouletteState<T>;
+	subscribe(listener: (event: RouletteEvent<T>) => void): () => void;
+	dispose(): void;
+};
