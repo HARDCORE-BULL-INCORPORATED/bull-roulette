@@ -1,3 +1,4 @@
+/** Hash a string to a 32-bit unsigned seed. */
 const hashStringSeed = (seed: string): number => {
     let h = 1779033703 ^ seed.length;
     for (let i = 0; i < seed.length; i += 1) {
@@ -7,6 +8,7 @@ const hashStringSeed = (seed: string): number => {
     return h >>> 0;
 };
 
+/** Deterministic RNG (Mulberry32). */
 const mulberry32 = (seed: number) => {
     let a = seed >>> 0;
     return () => {
@@ -18,6 +20,7 @@ const mulberry32 = (seed: number) => {
     };
 };
 
+/** Create a deterministic RNG from a number or string seed. */
 export const createSeededRng = (seed: number | string): (() => number) => {
     const normalizedSeed =
         typeof seed === "number" ? seed >>> 0 : hashStringSeed(seed);

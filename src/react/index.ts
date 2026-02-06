@@ -9,6 +9,7 @@ import type {
 } from "../core/types";
 import { createRouletteEngine } from "../core/engine";
 
+/** Return value for the useRoulette hook. */
 export type UseRouletteResult<T> = {
     state: RouletteState<T>;
     engine: RouletteEngine<T>;

@@ -8,7 +8,27 @@ import type {
 } from "./types";
 import { beginSpin, createInitialState, planSpin, step } from "./state";
 
-/** Create an imperative roulette engine instance. */
+/**
+ * Create an imperative roulette engine instance.
+ *
+ * @param config Configuration for spin behavior and selection.
+ * Required:
+ * - `segments`: array of segments to select from.
+ *
+ * Common options:
+ * - `durationMs`, `minRotations`, `maxRotations` control timing/rotations.
+ * - `pointerAngle` and `startAngle` control alignment and initial angle.
+ * - `seed` or `rng` control determinism.
+ *
+ * @returns Engine with imperative methods:
+ * - `spin(options?)`: start a spin and return the computed plan.
+ * - `stopAt(index)`: spin to a specific winning index.
+ * - `tick(deltaMs)`: advance the animation by deltaMs.
+ * - `getState()` / `setState(state)`: read or replace state.
+ * - `setSegments(segments)`: replace the segment list.
+ * - `subscribe(listener)`: listen to spin lifecycle events.
+ * - `dispose()`: remove listeners and disable the engine.
+ */
 export const createRouletteEngine = <T>(
 	config: RouletteConfig<T>,
 ): RouletteEngine<T> => {

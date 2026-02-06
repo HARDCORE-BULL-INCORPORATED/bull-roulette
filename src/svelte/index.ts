@@ -9,6 +9,7 @@ import type {
 } from "../core/types";
 import { createRouletteEngine } from "../core/engine";
 
+/** Svelte store interface for the roulette engine. */
 export type RouletteStore<T> = {
     subscribe: (run: (state: RouletteState<T>) => void) => () => void;
     engine: RouletteEngine<T>;
