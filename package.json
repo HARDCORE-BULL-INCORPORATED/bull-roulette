@@ -1,69 +1,72 @@
 {
-    "name": "bull-roulette",
-    "version": "0.1.0",
-    "type": "module",
-    "main": "./dist/cjs/index.js",
-    "module": "./dist/esm/index.js",
-    "types": "./dist/types/index.d.ts",
-    "exports": {
-        ".": {
-            "types": "./dist/types/index.d.ts",
-            "import": "./dist/esm/index.js",
-            "require": "./dist/cjs/index.js"
-        },
-        "./core": {
-            "types": "./dist/types/core/index.d.ts",
-            "import": "./dist/esm/core/index.js",
-            "require": "./dist/cjs/core/index.js"
-        },
-        "./react": {
-            "types": "./dist/types/react/index.d.ts",
-            "import": "./dist/esm/react/index.js",
-            "require": "./dist/cjs/react/index.js"
-        },
-        "./svelte": {
-            "types": "./dist/types/svelte/index.d.ts",
-            "import": "./dist/esm/svelte/index.js",
-            "require": "./dist/cjs/svelte/index.js"
-        }
+  "name": "bull-roulette",
+  "version": "0.1.0",
+  "type": "module",
+  "main": "./dist/cjs/index.js",
+  "module": "./dist/esm/index.js",
+  "types": "./dist/types/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/types/index.d.ts",
+      "import": "./dist/esm/index.js",
+      "require": "./dist/cjs/index.js"
     },
-    "files": [
-        "dist",
-        "README.md",
-        "API.md",
-        "LICENSE"
-    ],
-    "sideEffects": false,
-    "scripts": {
-        "build:esm": "bun build src/index.ts src/core/index.ts src/react/index.ts src/svelte/index.ts --outdir dist/esm --format=esm --external react --external svelte --external svelte/store",
-        "build:cjs": "bun build src/index.ts src/core/index.ts src/react/index.ts src/svelte/index.ts --outdir dist/cjs --format=cjs --external react --external svelte --external svelte/store",
-        "build:cjs:pkg": "printf '{\"type\":\"commonjs\"}' > dist/cjs/package.json",
-        "build:types": "tsc -p tsconfig.build.json",
-        "build": "bun run build:esm && bun run build:cjs && bun run build:cjs:pkg && bun run build:types",
-        "test": "bun test",
-        "lint": "oxlint",
-        "lint:fix": "oxlint --fix"
+    "./core": {
+      "types": "./dist/types/core/index.d.ts",
+      "import": "./dist/esm/core/index.js",
+      "require": "./dist/cjs/core/index.js"
     },
-    "peerDependencies": {
-        "react": ">=18",
-        "svelte": ">=3"
+    "./react": {
+      "types": "./dist/types/react/index.d.ts",
+      "import": "./dist/esm/react/index.js",
+      "require": "./dist/cjs/react/index.js"
     },
-    "peerDependenciesMeta": {
-        "react": {
-            "optional": true
-        },
-        "svelte": {
-            "optional": true
-        }
-    },
-    "devDependencies": {
-        "@types/bun": "latest",
-        "@types/react": "^18.0.0",
-        "@types/react-dom": "^18.0.0",
-        "oxlint": "^1.43.0",
-        "react": "^18.0.0",
-        "react-dom": "^18.0.0",
-        "svelte": "^4.0.0",
-        "typescript": "^5.0.0"
+    "./svelte": {
+      "types": "./dist/types/svelte/index.d.ts",
+      "import": "./dist/esm/svelte/index.js",
+      "require": "./dist/cjs/svelte/index.js"
     }
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "API.md",
+    "LICENSE"
+  ],
+  "sideEffects": false,
+  "scripts": {
+    "build:esm": "bun build src/index.ts src/core/index.ts src/react/index.ts src/svelte/index.ts --outdir dist/esm --format=esm --external react --external svelte --external svelte/store",
+    "build:cjs": "bun build src/index.ts src/core/index.ts src/react/index.ts src/svelte/index.ts --outdir dist/cjs --format=cjs --external react --external svelte --external svelte/store",
+    "build:cjs:pkg": "printf '{\"type\":\"commonjs\"}' > dist/cjs/package.json",
+    "build:types": "tsc -p tsconfig.build.json",
+    "build": "bun run build:esm && bun run build:cjs && bun run build:cjs:pkg && bun run build:types",
+    "test": "bun test",
+    "lint": "oxlint",
+    "lint:fix": "oxlint --fix",
+    "fmt": "oxfmt",
+    "fmt:check": "oxfmt --check"
+  },
+  "peerDependencies": {
+    "react": ">=18",
+    "svelte": ">=3"
+  },
+  "peerDependenciesMeta": {
+    "react": {
+      "optional": true
+    },
+    "svelte": {
+      "optional": true
+    }
+  },
+  "devDependencies": {
+    "@types/bun": "latest",
+    "@types/react": "^18.0.0",
+    "@types/react-dom": "^18.0.0",
+    "oxfmt": "^0.28.0",
+    "oxlint": "^1.43.0",
+    "react": "^18.0.0",
+    "react-dom": "^18.0.0",
+    "svelte": "^4.0.0",
+    "typescript": "^5.0.0"
+  }
 }

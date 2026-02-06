@@ -1,6 +1,7 @@
 # Roulette Library API (Draft)
 
 ## Design Goals
+
 - Framework-agnostic, headless core.
 - SSR-safe (no DOM or `window` access).
 - Two modes: controlled (pure state reducers) and imperative (engine instance).
@@ -8,6 +9,7 @@
 - Renderers are **out of scope** for v1 (future add-ons).
 
 ## Core Types
+
 ```ts
 export type Segment<T = unknown> = {
   id: string;
@@ -67,6 +69,7 @@ export type RouletteEvent<T = unknown> =
 ```
 
 ## Controlled Mode API
+
 ```ts
 export function createInitialState<T>(config: RouletteConfig<T>): RouletteState<T>;
 
@@ -94,6 +97,7 @@ export function selectWeightedIndex<T>(
 ```
 
 ## Imperative Engine API
+
 ```ts
 export function createRouletteEngine<T>(config: RouletteConfig<T>): {
   getState(): RouletteState<T>;
@@ -108,6 +112,7 @@ export function createRouletteEngine<T>(config: RouletteConfig<T>): {
 ```
 
 ## Behavioral Notes
+
 - **Determinism**: if `seed` is provided (and `rng` is not), an internal seeded RNG is used. Otherwise `Math.random` is used.
 - **Segments**: geometry assumes equal angular sizes; `weight` only affects selection.
 - **Target selection**: `planSpin` computes a `targetAngle` that lands the segment center on the `pointerAngle`, plus optional jitter within the segment (not applied when `targetAngle` is provided).
@@ -115,5 +120,6 @@ export function createRouletteEngine<T>(config: RouletteConfig<T>): {
 - **Events**: imperative engine emits `spin:start`, `spin:tick` on each `tick`, and `spin:complete` once done.
 
 ## Future (Out of Scope for v1)
+
 - Canvas/DOM/SVG renderers that consume `RouletteState`.
 - Built‑in UI components or styling.

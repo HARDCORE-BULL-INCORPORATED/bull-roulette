@@ -80,6 +80,7 @@ const engine = createRouletteEngine({
 ```
 
 ## SSR
+
 - The core is SSR-safe (no DOM access).
 - Adapters are also SSR-safe as long as you avoid calling tick/spin during SSR.
 
@@ -96,4 +97,5 @@ bun test
 ```
 
 ## Notes
+
 - Renderers (canvas/DOM/SVG) are intentionally out of scope for v1 and can be added later.
