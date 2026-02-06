@@ -84,7 +84,8 @@
 	</header>
 
 	<nav class="nav">
-		<a href="/">Back to headless demo</a>
+		<a href="/">Headless demo</a>
+		<a href="/slots">Slot machine demo</a>
 	</nav>
 
 	<div class="wheel-wrap">
@@ -127,6 +128,7 @@
 		flex-direction: column;
 		gap: 1.5rem;
 		font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+		color: #f2f2f2;
 	}
 
 	.header h1 {
@@ -136,11 +138,17 @@
 
 	.header p {
 		margin: 0;
-		color: #555;
+		color: #c6c6c6;
+	}
+
+	.nav {
+		display: flex;
+		gap: 1rem;
+		flex-wrap: wrap;
 	}
 
 	.nav a {
-		color: #1f6feb;
+		color: #8ab4f8;
 		font-weight: 600;
 	}
 
@@ -154,7 +162,8 @@
 		padding: 0.6rem 1rem;
 		border-radius: 8px;
 		border: 1px solid #ccc;
-		background: #fff;
+		background: #f5f5f5;
+		color: #111;
 		cursor: pointer;
 		font-weight: 600;
 	}
@@ -168,8 +177,9 @@
 		display: grid;
 		gap: 0.25rem;
 		padding: 1rem;
-		background: #f7f7f7;
+		background: #2b2b2b;
 		border-radius: 10px;
+		color: #f2f2f2;
 	}
 
 	.wheel-wrap {
@@ -196,7 +206,7 @@
 		height: 0;
 		border-left: 12px solid transparent;
 		border-right: 12px solid transparent;
-		border-bottom: 22px solid #111;
+		border-bottom: 22px solid #f5f5f5;
 		transform: translateX(-50%);
 		z-index: 2;
 	}

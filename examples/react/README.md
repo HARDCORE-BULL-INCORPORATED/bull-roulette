@@ -26,3 +26,4 @@ Example usage lives in `src/App.tsx`.
 Routes:
 - `/` headless demo
 - `/spin` spinning animation demo
+- `/slots` slot-machine demo

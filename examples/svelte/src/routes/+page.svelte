@@ -72,18 +72,15 @@
 	</header>
 
 	<nav class="nav">
-		<a href="/spin">Go to spinning demo</a>
+		<a href="/spin">Spinning demo</a>
+		<a href="/slots">Slot machine demo</a>
 	</nav>
 
 	<div class="controls">
 		<button type="button" on:click={spin} disabled={$roulette.phase === "spinning"}>
 			Spin
 		</button>
-		<button
-			type="button"
-			on:click={() => spinTo(1)}
-			disabled={$roulette.phase === "spinning"}
-		>
+		<button type="button" on:click={() => spinTo(1)} disabled={$roulette.phase === "spinning"}>
 			Spin to index 1
 		</button>
 	</div>
@@ -120,6 +117,7 @@
 		flex-direction: column;
 		gap: 1.5rem;
 		font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+		color: #f2f2f2;
 	}
 
 	.header h1 {
@@ -129,11 +127,17 @@
 
 	.header p {
 		margin: 0;
-		color: #555;
+		color: #c6c6c6;
+	}
+
+	.nav {
+		display: flex;
+		gap: 1rem;
+		flex-wrap: wrap;
 	}
 
 	.nav a {
-		color: #1f6feb;
+		color: #8ab4f8;
 		font-weight: 600;
 	}
 
@@ -147,7 +151,8 @@
 		padding: 0.6rem 1rem;
 		border-radius: 8px;
 		border: 1px solid #ccc;
-		background: #fff;
+		background: #f5f5f5;
+		color: #111;
 		cursor: pointer;
 		font-weight: 600;
 	}
@@ -161,8 +166,9 @@
 		display: grid;
 		gap: 0.25rem;
 		padding: 1rem;
-		background: #f7f7f7;
+		background: #2b2b2b;
 		border-radius: 10px;
+		color: #f2f2f2;
 	}
 
 	.segments {
@@ -179,11 +185,13 @@
 		border: 1px solid #e0e0e0;
 		display: flex;
 		justify-content: space-between;
+		background: #222;
 	}
 
 	.segments li.winner {
 		border-color: #111;
 		background: #ffe9c5;
+		color: #111;
 	}
 
 	.weight {

@@ -11,7 +11,9 @@ const SEGMENTS = [
 	{ id: "echo", label: "Echo", weight: 2 },
 ];
 
+const SYMBOLS = ["🍒", "🔔", "⭐", "7", "🍋"];
 const WHEEL_COLORS = ["#f94144", "#f3722c", "#f8961e", "#90be6d", "#577590"];
+const ITEM_SIZE = 72;
 
 const useSpinLoop = (phase: string, tick: (delta: number) => void) => {
 	const rafIdRef = useRef<number | null>(null);
@@ -78,7 +80,8 @@ const HeadlessDemo = () => {
 			</header>
 
 			<nav className="nav">
-				<Link to="/spin">Go to spinning demo</Link>
+				<Link to="/spin">Spinning demo</Link>
+				<Link to="/slots">Slot machine demo</Link>
 			</nav>
 
 			<div className="controls">
@@ -158,7 +161,8 @@ const SpinDemo = () => {
 			</header>
 
 			<nav className="nav">
-				<Link to="/">Back to headless demo</Link>
+				<Link to="/">Headless demo</Link>
+				<Link to="/slots">Slot machine demo</Link>
 			</nav>
 
 			<div className="wheel-wrap">
@@ -194,11 +198,104 @@ const SpinDemo = () => {
 	);
 };
 
+const SlotReelView = ({
+	label,
+	direction,
+	stateAngle,
+}: {
+	label: string;
+	direction: "left" | "right" | "up" | "down";
+	stateAngle: number;
+}) => {
+	const cycle = SYMBOLS.length * ITEM_SIZE;
+	const normalized = ((stateAngle % 360) + 360) % 360;
+	const offset = (normalized / 360) * cycle;
+	const signed = direction === "left" || direction === "up" ? -offset : offset;
+	const axis = direction === "left" || direction === "right" ? "X" : "Y";
+	const base = -cycle * 3;
+	const transform = `translate${axis}(${base + signed}px)`;
+
+	const trackItems = Array.from({ length: 8 }, () => SYMBOLS).flat();
+
+	return (
+		<div className="slot">
+			<div className="slot-label">{label}</div>
+			<div className={`slot-window ${axis === "X" ? "horizontal" : "vertical"}`}>
+				<div className="slot-track" style={{ transform }}>
+					{trackItems.map((symbol, index) => (
+						<div className="slot-item" key={`${label}-${index}`}>
+							{symbol}
+						</div>
+					))}
+				</div>
+			</div>
+		</div>
+	);
+};
+
+const SlotsDemo = () => {
+	const config = useMemo(
+		() => ({
+			segments: SYMBOLS.map((symbol) => ({ id: symbol })),
+			durationMs: 2200,
+			minRotations: 4,
+			maxRotations: 6,
+			jitterFactor: 0.1,
+		}),
+		[],
+	);
+
+	const left = useRoulette(config);
+	const right = useRoulette(config);
+	const up = useRoulette(config);
+	const down = useRoulette(config);
+
+	useSpinLoop(left.state.phase, left.tick);
+	useSpinLoop(right.state.phase, right.tick);
+	useSpinLoop(up.state.phase, up.tick);
+	useSpinLoop(down.state.phase, down.tick);
+
+	const spinAll = () => {
+		left.spin();
+		right.spin();
+		up.spin();
+		down.spin();
+	};
+
+	return (
+		<div className="app">
+			<header className="header">
+				<h1>bull-roulette (Slots)</h1>
+				<p>Slot-machine motion using the headless engine angle.</p>
+			</header>
+
+			<nav className="nav">
+				<Link to="/">Headless demo</Link>
+				<Link to="/spin">Spinning demo</Link>
+			</nav>
+
+			<div className="controls">
+				<button type="button" onClick={spinAll}>
+					Spin all
+				</button>
+			</div>
+
+			<div className="slot-grid">
+				<SlotReelView label="Left" direction="left" stateAngle={left.state.angle} />
+				<SlotReelView label="Right" direction="right" stateAngle={right.state.angle} />
+				<SlotReelView label="Up" direction="up" stateAngle={up.state.angle} />
+				<SlotReelView label="Down" direction="down" stateAngle={down.state.angle} />
+			</div>
+		</div>
+	);
+};
+
 function App() {
 	return (
 		<Routes>
 			<Route path="/" element={<HeadlessDemo />} />
 			<Route path="/spin" element={<SpinDemo />} />
+			<Route path="/slots" element={<SlotsDemo />} />
 		</Routes>
 	);
 }
