@@ -1,0 +1,8 @@
+.spinButton {
+	font-size: 18px;
+	padding: 12px 20px;
+	margin-top: 15px;
+	/* Add any other styles from cs-btn if they are specific to this button */
+	/* For example, if cs-btn provides default colors, borders, etc. */
+	/* If cs-btn is purely global and sufficient, this file might only need overrides or can be minimal. */
+}

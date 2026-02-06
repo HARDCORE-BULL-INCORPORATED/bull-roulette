@@ -1,0 +1,17 @@
+.controlsContainer {
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	gap: 20px; /* Adjust gap as needed */
+	margin-bottom: 20px; /* Space below the controls */
+}
+
+/* If showResultModalLabel was specific to the checkbox, move it here too.
+   Otherwise, if it's a general label style, it can stay in CaseRoulette.module.css or a global CSS file.
+   Assuming it's specific for now: */
+.showResultModalLabel {
+	display: flex;
+	align-items: center;
+	cursor: pointer;
+	font-size: 0.9rem; /* Adjust font size as needed */
+}

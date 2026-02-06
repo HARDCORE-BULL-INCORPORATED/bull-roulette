@@ -1,0 +1,70 @@
+.rouletteViewport {
+	width: 100%;
+	height: 180px; /* Default height */
+	position: relative;
+	overflow: hidden;
+	border-radius: 4px;
+	box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.7);
+}
+
+.rouletteTrack {
+	display: flex;
+	position: absolute;
+	left: 0;
+	top: 1px;
+	transition: left 0.2s linear;
+	height: 100%;
+}
+
+.spinning {
+	/* This class is added to rouletteTrack when spinning */
+	transition: left cubic-bezier(0.15, 0.85, 0.35, 1.0) var(--spin-duration, 8s);
+}
+
+.indicator {
+	position: absolute;
+	top: 0;
+	left: 50%;
+	height: 100%;
+	width: 4px;
+	background-color: #ff5722;
+	transform: translateX(-50%);
+	z-index: 10;
+	pointer-events: none;
+}
+
+.indicator::before,
+.indicator::after {
+	content: "";
+	position: absolute;
+	left: 50%;
+	transform: translateX(-50%);
+	width: 0;
+	height: 0;
+	border-style: solid;
+}
+
+.indicator::before {
+	top: 0;
+	border-width: 10px 5px 0 5px;
+	border-color: #ff5722 transparent transparent transparent;
+}
+
+.indicator::after {
+	bottom: 0;
+	border-width: 0 5px 10px 5px;
+	border-color: transparent transparent #ff5722 transparent;
+}
+
+/* Media queries for responsiveness */
+@media (max-width: 768px) {
+	.rouletteViewport {
+		height: 150px;
+	}
+}
+
+@media (max-width: 480px) {
+	.rouletteViewport {
+		height: 120px;
+	}
+}
