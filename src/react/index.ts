@@ -37,6 +37,7 @@ const applyConfig = <T>(target: RouletteConfig<T>, source: RouletteConfig<T>) =>
 export const useRoulette = <T>(config: RouletteConfig<T>): UseRouletteResult<T> => {
     const configRef = useRef<RouletteConfig<T>>({ ...config });
     const engineRef = useRef<RouletteEngine<T> | null>(null);
+    const disposeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
     if (!engineRef.current) {
         configRef.current = {
@@ -51,7 +52,19 @@ export const useRoulette = <T>(config: RouletteConfig<T>): UseRouletteResult<T> 
         engineRef.current?.setSegments(config.segments);
     }, [config]);
 
-    useEffect(() => () => engineRef.current?.dispose(), []);
+    useEffect(() => {
+        if (disposeTimerRef.current !== null) {
+            clearTimeout(disposeTimerRef.current);
+            disposeTimerRef.current = null;
+        }
+
+        return () => {
+            disposeTimerRef.current = setTimeout(() => {
+                engineRef.current?.dispose();
+                engineRef.current = null;
+            }, 0);
+        };
+    }, []);
 
     const subscribe = useMemo(() => {
         return (listener: () => void) => {

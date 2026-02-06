@@ -10,12 +10,14 @@
 		{ id: "echo", label: "Echo", weight: 2 },
 	];
 
+	const wheelColors = ["#f94144", "#f3722c", "#f8961e", "#90be6d", "#577590"];
+
 	const roulette = createRouletteStore({
 		segments,
 		durationMs: 2500,
 		minRotations: 3,
 		maxRotations: 5,
-		jitterFactor: 0.25,
+		jitterFactor: 0.15,
 	});
 
 	let rafId: number | null = null;
@@ -63,28 +65,42 @@
 		stopLoop();
 		unsubscribe();
 	});
+
+	$: slice = 360 / segments.length;
+	$: gradientStops = segments
+		.map((_, index) => {
+			const start = index * slice;
+			const end = (index + 1) * slice;
+			const color = wheelColors[index % wheelColors.length];
+			return `${color} ${start}deg ${end}deg`;
+		})
+		.join(", ");
 </script>
 
 <div class="app">
 	<header class="header">
-		<h1>bull-roulette (Svelte)</h1>
-		<p>Headless engine demo using the Svelte adapter.</p>
+		<h1>bull-roulette (Spin)</h1>
+		<p>Simple spinning animation driven by the headless engine.</p>
 	</header>
 
 	<nav class="nav">
-		<a href="/spin">Go to spinning demo</a>
+		<a href="/">Back to headless demo</a>
 	</nav>
+
+	<div class="wheel-wrap">
+		<div class="pointer"></div>
+		<div
+			class="wheel"
+			style={`transform: rotate(${$roulette.angle}deg); background-image: conic-gradient(${gradientStops});`}
+		></div>
+	</div>
 
 	<div class="controls">
 		<button type="button" on:click={spin} disabled={$roulette.phase === "spinning"}>
 			Spin
 		</button>
-		<button
-			type="button"
-			on:click={() => spinTo(1)}
-			disabled={$roulette.phase === "spinning"}
-		>
-			Spin to index 1
+		<button type="button" on:click={() => spinTo(2)} disabled={$roulette.phase === "spinning"}>
+			Spin to index 2
 		</button>
 	</div>
 
@@ -100,15 +116,6 @@
 			{/if}
 		</div>
 	</section>
-
-	<ul class="segments">
-		{#each segments as segment, index}
-			<li class:winner={$roulette.phase === "stopped" && index === $roulette.winningIndex}>
-				<span>{segment.label}</span>
-				<span class="weight">weight {segment.weight}</span>
-			</li>
-		{/each}
-	</ul>
 </div>
 
 <style>
@@ -165,29 +172,32 @@
 		border-radius: 10px;
 	}
 
-	.segments {
-		list-style: none;
-		padding: 0;
-		margin: 0;
-		display: grid;
-		gap: 0.75rem;
+	.wheel-wrap {
+		position: relative;
+		width: 320px;
+		height: 320px;
+		margin: 0 auto;
 	}
 
-	.segments li {
-		padding: 0.75rem 1rem;
-		border-radius: 10px;
-		border: 1px solid #e0e0e0;
-		display: flex;
-		justify-content: space-between;
+	.wheel {
+		width: 100%;
+		height: 100%;
+		border-radius: 50%;
+		border: 6px solid #111;
+		box-shadow: 0 20px 40px rgba(0, 0, 0, 0.25);
+		transition: transform 0.05s linear;
 	}
 
-	.segments li.winner {
-		border-color: #111;
-		background: #ffe9c5;
-	}
-
-	.weight {
-		color: #666;
-		font-size: 0.9rem;
+	.pointer {
+		position: absolute;
+		top: -6px;
+		left: 50%;
+		width: 0;
+		height: 0;
+		border-left: 12px solid transparent;
+		border-right: 12px solid transparent;
+		border-bottom: 22px solid #111;
+		transform: translateX(-50%);
+		z-index: 2;
 	}
 </style>
