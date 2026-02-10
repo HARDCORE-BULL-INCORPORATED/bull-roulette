@@ -370,4 +370,14 @@ describe("roulette core", () => {
             expect(() => engine.setSegments([])).toThrow("Roulette requires at least one segment.");
         });
     });
+
+    it("engine emits dispose event", () => {
+        const engine = createRouletteEngine(baseConfig);
+        let disposed = false;
+        engine.subscribe((event) => {
+            if (event.type === "dispose") disposed = true;
+        });
+        engine.dispose();
+        expect(disposed).toBe(true);
+    });
 });

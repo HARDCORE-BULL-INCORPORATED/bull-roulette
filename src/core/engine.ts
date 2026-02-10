@@ -111,6 +111,7 @@ export const createRouletteEngine = <T>(initialConfig: RouletteConfig<T>): Roule
     };
 
     const dispose = () => {
+        emit("dispose", state);
         listeners.clear();
         disposed = true;
     };

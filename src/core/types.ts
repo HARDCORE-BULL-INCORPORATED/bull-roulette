@@ -87,7 +87,8 @@ export type RouletteEvent<T = unknown> =
     | { type: "spin:start"; state: RouletteState<T> }
     | { type: "spin:tick"; state: RouletteState<T> }
     | { type: "spin:complete"; state: RouletteState<T> }
-    | { type: "spin:reset"; state: RouletteState<T> };
+    | { type: "spin:reset"; state: RouletteState<T> }
+    | { type: "dispose"; state: RouletteState<T> };
 
 /** Imperative roulette engine interface. */
 export type RouletteEngine<T = unknown> = {
