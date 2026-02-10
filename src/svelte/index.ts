@@ -37,7 +37,6 @@ export const createRouletteStore = <T>(config: RouletteConfig<T>): RouletteStore
 
         return () => {
             unsubscribe();
-            engine.dispose();
         };
     });
 

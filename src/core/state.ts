@@ -41,7 +41,7 @@ export const selectWeightedIndex = <T>(segments: Segment<T>[], rng: () => number
     let threshold = rng() * totalWeight;
     for (let i = 0; i < segments.length; i += 1) {
         threshold -= weights[i] ?? 0;
-        if (threshold <= 0) return i;
+        if (threshold < 0) return i;
     }
 
     return segments.length - 1;

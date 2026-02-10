@@ -29,6 +29,22 @@ describe("svelte adapter", () => {
         unsubscribe();
 
         expect(states.length).toBeGreaterThan(0);
-        expect(store.getState().phase).toBe("stopped");
+    });
+
+    it("allows re-subscription and spin after all subscribers leave", () => {
+        const store = createRouletteStore(config);
+
+        // First subscription
+        const unsubscribe1 = store.subscribe(() => {});
+        unsubscribe1(); // Last subscriber leaves, cleanup fires
+
+        // Should NOT be disposed, so spin should work
+        expect(() =>
+            store.spin({
+                targetIndex: 1,
+            }),
+        ).not.toThrow();
+
+        expect(store.getState().phase).toBe("spinning");
     });
 });
