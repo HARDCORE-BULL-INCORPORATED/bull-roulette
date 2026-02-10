@@ -39,6 +39,7 @@ export const useRoulette = <T>(config: RouletteConfig<T>): UseRouletteResult<T> 
     const engineRef = useRef<RouletteEngine<T> | null>(null);
     const disposeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
     const fallbackStateRef = useRef<RouletteState<T> | null>(null);
+    const unmountedRef = useRef(false);
 
     if (!engineRef.current) {
         configRef.current = {
@@ -55,12 +56,16 @@ export const useRoulette = <T>(config: RouletteConfig<T>): UseRouletteResult<T> 
     }, [config]);
 
     useEffect(() => {
+        unmountedRef.current = false;
+
         if (disposeTimerRef.current !== null) {
             clearTimeout(disposeTimerRef.current);
             disposeTimerRef.current = null;
         }
 
         return () => {
+            unmountedRef.current = true;
+
             disposeTimerRef.current = setTimeout(() => {
                 engineRef.current?.dispose();
                 engineRef.current = null;
@@ -92,12 +97,28 @@ export const useRoulette = <T>(config: RouletteConfig<T>): UseRouletteResult<T> 
 
     return useMemo(() => {
         const engine = engineRef.current as RouletteEngine<T>;
+
+        const guardDisposed = (name: string) => {
+            if (unmountedRef.current) {
+                throw new Error(`Cannot call ${name}() on an unmounted roulette engine.`);
+            }
+        };
+
         return {
             state,
             engine,
-            spin: engine.spin,
-            stopAt: engine.stopAt,
-            tick: engine.tick,
+            spin: (options?: SpinOptions) => {
+                guardDisposed("spin");
+                return engine.spin(options);
+            },
+            stopAt: (index: number) => {
+                guardDisposed("stopAt");
+                return engine.stopAt(index);
+            },
+            tick: (deltaMs: number) => {
+                guardDisposed("tick");
+                return engine.tick(deltaMs);
+            },
             getState: engine.getState,
         };
     }, [state]);
