@@ -3,6 +3,7 @@ import type {
     RouletteEngine,
     RouletteEvent,
     RouletteState,
+    Segment,
     SpinOptions,
     SpinPlan,
 } from "./types";
@@ -61,7 +62,25 @@ export const createRouletteEngine = <T>(initialConfig: RouletteConfig<T>): Roule
         return plan;
     };
 
+    const spinAsync = (options: SpinOptions = {}): Promise<SpinPlan> => {
+        const plan = spin(options);
+        return new Promise<SpinPlan>((resolve) => {
+            const unsubscribe = subscribe((event) => {
+                if (event.type === "spin:complete") {
+                    unsubscribe();
+                    resolve(plan);
+                }
+            });
+        });
+    };
+
     const stopAt = (index: number): SpinPlan => spin({ targetIndex: index });
+
+    const getWinningSegment = (): Segment<T> | null => {
+        const idx = state.winningIndex;
+        if (idx === null || idx < 0 || idx >= state.segments.length) return null;
+        return state.segments[idx] ?? null;
+    };
 
     const tick = (deltaMs: number): RouletteState<T> => {
         if (disposed) return state;
@@ -97,10 +116,12 @@ export const createRouletteEngine = <T>(initialConfig: RouletteConfig<T>): Roule
         setState,
         setSegments,
         spin,
+        spinAsync,
         stopAt,
         tick,
         subscribe,
         reset,
         dispose,
+        getWinningSegment,
     };
 };

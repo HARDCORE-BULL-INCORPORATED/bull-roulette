@@ -279,4 +279,48 @@ describe("roulette core", () => {
         expect(plan.winningIndex).toBe(2);
         expect(engine.getState().phase).toBe("spinning");
     });
+
+    it("spinAsync resolves with the plan after spin completes", async () => {
+        const engine = createRouletteEngine(baseConfig);
+        const promise = engine.spinAsync({
+            targetIndex: 1,
+            durationMs: 200,
+            minRotations: 1,
+            maxRotations: 1,
+        });
+
+        // Drive the animation to completion
+        engine.tick(100);
+        engine.tick(100);
+
+        const plan = await promise;
+        expect(plan.winningIndex).toBe(1);
+        expect(engine.getState().phase).toBe("stopped");
+    });
+
+    it("getWinningSegment returns null when idle", () => {
+        const engine = createRouletteEngine(baseConfig);
+        expect(engine.getWinningSegment()).toBeNull();
+    });
+
+    it("getWinningSegment returns the winning segment after spin", () => {
+        const engine = createRouletteEngine(baseConfig);
+        engine.spin({ targetIndex: 2, durationMs: 100, minRotations: 1, maxRotations: 1 });
+        engine.tick(100);
+        expect(engine.getState().phase).toBe("stopped");
+
+        const winner = engine.getWinningSegment();
+        expect(winner).not.toBeNull();
+        expect(winner!.id).toBe("c");
+    });
+
+    it("getWinningSegment returns null after reset", () => {
+        const engine = createRouletteEngine(baseConfig);
+        engine.spin({ targetIndex: 0, durationMs: 100, minRotations: 1, maxRotations: 1 });
+        engine.tick(100);
+        expect(engine.getWinningSegment()).not.toBeNull();
+
+        engine.reset();
+        expect(engine.getWinningSegment()).toBeNull();
+    });
 });

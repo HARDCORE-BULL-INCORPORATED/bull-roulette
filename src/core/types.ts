@@ -99,8 +99,12 @@ export type RouletteEngine<T = unknown> = {
     setSegments(segments: Segment<T>[]): void;
     /** Start a spin and return the computed plan. */
     spin(options?: SpinOptions): SpinPlan;
+    /** Start a spin and return a promise that resolves with the plan when the spin completes. */
+    spinAsync(options?: SpinOptions): Promise<SpinPlan>;
     /** Convenience for spinning to a specific index. */
     stopAt(index: number): SpinPlan;
+    /** Return the winning segment, or null if no winner yet. */
+    getWinningSegment(): Segment<T> | null;
     /** Advance the animation by deltaMs. */
     tick(deltaMs: number): RouletteState<T>;
     /** Subscribe to lifecycle events. */

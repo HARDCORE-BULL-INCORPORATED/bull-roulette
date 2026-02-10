@@ -4,6 +4,7 @@ import type {
     RouletteEngine,
     RouletteEvent,
     RouletteState,
+    Segment,
     SpinOptions,
     SpinPlan,
 } from "../core/types";
@@ -14,9 +15,11 @@ export type UseRouletteResult<T> = {
     state: RouletteState<T>;
     engine: RouletteEngine<T>;
     spin: (options?: SpinOptions) => SpinPlan;
+    spinAsync: (options?: SpinOptions) => Promise<SpinPlan>;
     stopAt: (index: number) => SpinPlan;
     tick: (deltaMs: number) => RouletteState<T>;
     getState: () => RouletteState<T>;
+    getWinningSegment: () => Segment<T> | null;
 };
 
 const applyConfig = <T>(target: RouletteConfig<T>, source: RouletteConfig<T>) => {
@@ -111,6 +114,10 @@ export const useRoulette = <T>(config: RouletteConfig<T>): UseRouletteResult<T> 
                 guardDisposed("spin");
                 return engine.spin(options);
             },
+            spinAsync: (options?: SpinOptions) => {
+                guardDisposed("spinAsync");
+                return engine.spinAsync(options);
+            },
             stopAt: (index: number) => {
                 guardDisposed("stopAt");
                 return engine.stopAt(index);
@@ -120,6 +127,7 @@ export const useRoulette = <T>(config: RouletteConfig<T>): UseRouletteResult<T> 
                 return engine.tick(deltaMs);
             },
             getState: engine.getState,
+            getWinningSegment: engine.getWinningSegment,
         };
     }, [state]);
 };
