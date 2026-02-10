@@ -38,6 +38,7 @@ export const useRoulette = <T>(config: RouletteConfig<T>): UseRouletteResult<T> 
     const configRef = useRef<RouletteConfig<T>>({ ...config });
     const engineRef = useRef<RouletteEngine<T> | null>(null);
     const disposeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+    const fallbackStateRef = useRef<RouletteState<T> | null>(null);
 
     if (!engineRef.current) {
         configRef.current = {
@@ -45,6 +46,7 @@ export const useRoulette = <T>(config: RouletteConfig<T>): UseRouletteResult<T> 
             segments: [...configRef.current.segments],
         };
         engineRef.current = createRouletteEngine(configRef.current);
+        fallbackStateRef.current = engineRef.current.getState();
     }
 
     useEffect(() => {
@@ -81,7 +83,10 @@ export const useRoulette = <T>(config: RouletteConfig<T>): UseRouletteResult<T> 
         };
     }, []);
 
-    const getSnapshot = useMemo(() => () => engineRef.current?.getState() as RouletteState<T>, []);
+    const getSnapshot = useMemo(
+        () => () => engineRef.current?.getState() ?? fallbackStateRef.current!,
+        [],
+    );
 
     const state = useSyncExternalStore(subscribe, getSnapshot, getSnapshot);
 
