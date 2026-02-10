@@ -35,7 +35,11 @@ engine.subscribe((event) => {
 });
 
 engine.spin();
-// call engine.tick(deltaMs) from your animation loop
+
+// Start the built-in rAF loop
+engine.start();
+
+// Or manual: engine.tick(deltaMs)
 ```
 
 ## Controlled Mode

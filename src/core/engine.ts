@@ -26,6 +26,8 @@ import { validateConfig, validateSpinOptions } from "./validation";
  * - `spin(options?)`: start a spin and return the computed plan.
  * - `stopAt(index)`: spin to a specific winning index.
  * - `tick(deltaMs)`: advance the animation by deltaMs.
+ * - `start()`: start the built-in rAF tick loop.
+ * - `stop()`: stop the built-in rAF tick loop.
  * - `getState()` / `setState(state)`: read or replace state.
  * - `setSegments(segments)`: replace the segment list.
  * - `subscribe(listener)`: listen to spin lifecycle events.
@@ -99,6 +101,36 @@ export const createRouletteEngine = <T>(initialConfig: RouletteConfig<T>): Roule
         return state;
     };
 
+    let rafId: number | null = null;
+    let lastTime: number | null = null;
+
+    const start = () => {
+        if (typeof window === "undefined" || !window.requestAnimationFrame || rafId !== null)
+            return;
+
+        const loop = (time: number) => {
+            if (lastTime !== null) {
+                const delta = time - lastTime;
+                tick(delta);
+            }
+            lastTime = time;
+            if (rafId !== null) {
+                rafId = window.requestAnimationFrame(loop);
+            }
+        };
+
+        lastTime = null;
+        rafId = window.requestAnimationFrame(loop);
+    };
+
+    const stop = () => {
+        if (rafId !== null) {
+            window.cancelAnimationFrame(rafId);
+            rafId = null;
+            lastTime = null;
+        }
+    };
+
     const subscribe = (listener: (event: RouletteEvent<T>) => void) => {
         listeners.add(listener);
         return () => listeners.delete(listener);
@@ -111,6 +143,7 @@ export const createRouletteEngine = <T>(initialConfig: RouletteConfig<T>): Roule
     };
 
     const dispose = () => {
+        stop();
         emit("dispose", state);
         listeners.clear();
         disposed = true;
@@ -128,5 +161,7 @@ export const createRouletteEngine = <T>(initialConfig: RouletteConfig<T>): Roule
         reset,
         dispose,
         getWinningSegment,
+        start,
+        stop,
     };
 };

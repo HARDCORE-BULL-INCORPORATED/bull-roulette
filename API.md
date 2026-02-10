@@ -100,6 +100,8 @@ export function createRouletteEngine<T>(config: RouletteConfig<T>): {
     spin(options?: SpinOptions): SpinPlan;
     stopAt(index: number): SpinPlan;
     tick(deltaMs: number): RouletteState<T>;
+    start(): void;
+    stop(): void;
     subscribe(listener: (event: RouletteEvent<T>) => void): () => void;
     dispose(): void;
 };

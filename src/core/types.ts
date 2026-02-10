@@ -108,6 +108,10 @@ export type RouletteEngine<T = unknown> = {
     getWinningSegment(): Segment<T> | null;
     /** Advance the animation by deltaMs. */
     tick(deltaMs: number): RouletteState<T>;
+    /** Start a requestAnimationFrame tick loop. (Browser only) */
+    start(): void;
+    /** Stop the requestAnimationFrame tick loop. */
+    stop(): void;
     /** Subscribe to lifecycle events. */
     subscribe(listener: (event: RouletteEvent<T>) => void): () => void;
     /** Reset the engine back to idle state. */
