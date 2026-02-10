@@ -9,7 +9,7 @@ const DEFAULT_POINTER_ANGLE = 0;
 const DEFAULT_JITTER_FACTOR = 0.3;
 const DEFAULT_ROTATION_DIRECTION: 1 | -1 = 1;
 
-const resolveRng = <T>(config: RouletteConfig<T>): (() => number) => {
+export const resolveRng = <T>(config: RouletteConfig<T>): (() => number) => {
     if (config.rng) return config.rng;
     if (config.seed !== undefined) return createSeededRng(config.seed);
     return Math.random;
@@ -104,13 +104,14 @@ export const planSpin = <T>(
     state: RouletteState<T>,
     config: RouletteConfig<T>,
     options: SpinOptions = {},
+    resolvedRng?: () => number,
 ): SpinPlan => {
     const segments = resolveSegments(state, config);
     if (!segments.length) {
         throw new Error("Roulette requires at least one segment.");
     }
 
-    const rng = resolveRng(config);
+    const rng = resolvedRng ?? resolveRng(config);
     const minRotations = options.minRotations ?? config.minRotations ?? DEFAULT_MIN_ROTATIONS;
     const maxRotations = options.maxRotations ?? config.maxRotations ?? DEFAULT_MAX_ROTATIONS;
     const rotations = pickRandomIntInclusive(minRotations, maxRotations, rng);

@@ -193,4 +193,30 @@ describe("roulette core", () => {
         expect(engine.getState().angle).toBe(123);
         expect(engine.getState().phase).toBe("stopped");
     });
+
+    it("consecutive seeded spins advance the RNG and can produce different winners", () => {
+        const manySegments = Array.from({ length: 10 }, (_, i) => ({
+            id: String(i),
+            weight: 1,
+        }));
+        const engine = createRouletteEngine({
+            segments: manySegments,
+            seed: "deterministic",
+            durationMs: 100,
+            minRotations: 1,
+            maxRotations: 1,
+            jitterFactor: 0,
+        });
+
+        const winners: number[] = [];
+        for (let i = 0; i < 5; i += 1) {
+            const plan = engine.spin();
+            winners.push(plan.winningIndex);
+            // Complete the spin so the engine is ready for the next one
+            engine.tick(plan.durationMs);
+        }
+
+        const unique = new Set(winners);
+        expect(unique.size).toBeGreaterThan(1);
+    });
 });

@@ -6,7 +6,7 @@ import type {
     SpinOptions,
     SpinPlan,
 } from "./types";
-import { beginSpin, createInitialState, planSpin, step } from "./state";
+import { beginSpin, createInitialState, planSpin, resolveRng, step } from "./state";
 
 /**
  * Create an imperative roulette engine instance.
@@ -31,6 +31,7 @@ import { beginSpin, createInitialState, planSpin, step } from "./state";
  */
 export const createRouletteEngine = <T>(initialConfig: RouletteConfig<T>): RouletteEngine<T> => {
     const config = { ...initialConfig };
+    const rng = resolveRng(config);
     let state: RouletteState<T> = createInitialState(config);
     const listeners = new Set<(event: RouletteEvent<T>) => void>();
     let disposed = false;
@@ -53,7 +54,7 @@ export const createRouletteEngine = <T>(initialConfig: RouletteConfig<T>): Roule
 
     const spin = (options: SpinOptions = {}): SpinPlan => {
         if (disposed) throw new Error("Engine is disposed.");
-        const plan = planSpin(state, config, options);
+        const plan = planSpin(state, config, options, rng);
         state = beginSpin(state, plan);
         emit("spin:start", state);
         return plan;
