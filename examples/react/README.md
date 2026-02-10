@@ -24,6 +24,7 @@ If you update the library source, rebuild it (`bun run build`) to refresh the ex
 Example usage lives in `src/App.tsx`.
 
 Routes:
+
 - `/` headless demo
 - `/spin` spinning animation demo
 - `/slots` slot-machine demo

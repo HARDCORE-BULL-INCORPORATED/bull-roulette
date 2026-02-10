@@ -1,72 +1,110 @@
-# Roulette Library Plan
+# Roulette Library — Improvement Plan
 
-## Scope Decisions
+Bugs, additions, and refactors identified from a full audit of `src/`.
 
-- Framework-agnostic headless core.
-- React/Svelte adapters only (no renderer included).
-- Deterministic RNG only when seed provided.
-- SSR-safe core (no DOM usage).
-- Build with Bun.
-- Future: optional renderer plugins (canvas/DOM/SVG) can be added later.
+---
 
-## Phase 1 — Audit & Extraction
+## Bugs
 
-1. Review SolidJS code in `/Users/kristjan/Documents/github/roulette/roulette/CaseRoulette.tsx`.
-2. Pull spin/physics logic and types from `/Users/kristjan/Documents/github/roulette/roulette/utils.ts` and `/Users/kristjan/Documents/github/roulette/roulette/types.ts`.
-3. Identify core logic that can be made pure and framework-agnostic.
+### 1. Engine mutates caller's `config` object
 
-## Phase 2 — Core API Design
+`setSegments` in `engine.ts:48` writes directly to `config.segments`, leaking side effects to the caller's original object. The engine should maintain its own internal copy of the config.
 
-1. Define types: `Segment`, `RouletteConfig`, `RouletteState`, `SpinOptions`, `Events`.
-2. Design two usage modes:
-3. Controlled: pure reducer `step(state, dt, config)` and `createInitialState(config)`.
-4. Imperative: `createRouletteEngine(config)` returns methods.
-5. Deterministic RNG only when `seed` is provided; otherwise use `Math.random`.
+### 2. Seeded RNG resets on every `planSpin` call
 
-## Phase 3 — Core Implementation
+`resolveRng(config)` is called inside `planSpin`, creating a fresh RNG from the seed each time. This means consecutive spins with the same seed always pick the same winner — the RNG sequence never advances between spins.
 
-1. Create `src/core/engine.ts` with:
-2. `createRouletteEngine`, `spin`, `stopAt`, `tick`, `getState`, `setState`, `subscribe`, `dispose`.
-3. Create `src/core/state.ts` with:
-4. `createInitialState`, `step`, `resolveTarget`.
-5. Ensure zero DOM access for SSR safety.
+**Fix:** Resolve the RNG once at engine creation and persist the closure so consecutive calls advance the sequence.
 
-## Phase 4 — Adapters
+### 3. React adapter `getSnapshot` crashes after dispose
 
-1. React adapter in `/Users/kristjan/Documents/github/roulette/src/react/index.ts`:
-2. `useRoulette(config)` hook returning imperative engine + derived state.
-3. Svelte adapter in `/Users/kristjan/Documents/github/roulette/src/svelte/index.ts`:
-4. Store wrapper around the engine.
-5. No renderers (canvas/DOM) now.
-6. Add note in docs for future renderer plugins.
+`getSnapshot` is memoized with `[]` deps and reads from `engineRef.current`. After disposal sets `engineRef.current = null`, `getSnapshot` returns `null` cast to `RouletteState<T>`, causing runtime errors on `.phase`, `.angle`, etc.
 
-## Phase 5 — Packaging with Bun
+### 4. React adapter deferred dispose → use-after-dispose window
 
-1. Create `src/index.ts` to export core and adapters.
-2. Build ESM and CJS using Bun.
-3. Emit types via `tsc --emitDeclarationOnly`.
-4. Update `/Users/kristjan/Documents/github/roulette/package.json`:
-5. `exports` map for `/core`, `/react`, `/svelte`, root.
-6. `peerDependencies` for `react` and `svelte` marked optional.
+`setTimeout(() => { engine.dispose(); engine = null; }, 0)` — during the 0ms window a callback can still call `spin()` on a live engine that is about to be disposed underneath it.
 
-## Phase 6 — Tests
+### 5. Svelte adapter disposes engine when last subscriber leaves
 
-1. Core engine deterministic behavior with seeded RNG.
-2. Controlled vs imperative equivalence.
-3. Stop target accuracy and duration constraints.
-4. SSR safety test that imports core without `window`.
+The `readable` cleanup function calls `engine.dispose()`. If a Svelte component unmounts and remounts (e.g. `{#if}`), the store's cleanup fires, permanently disposing the engine. Subsequent `spin()` calls throw `"Engine is disposed."`.
 
-## Phase 7 — Docs
+### 6. `selectWeightedIndex` off-by-one bias
 
-1. Update `/Users/kristjan/Documents/github/roulette/README.md`:
-2. Quickstart for core.
-3. Controlled vs imperative usage.
-4. React and Svelte examples.
-5. SSR notes.
-6. Future: renderer adapters (canvas/DOM/SVG).
+`threshold <= 0` (not `< 0`) means values exactly at a boundary get attributed to the current segment. Combined with `rng() * totalWeight` being able to return 0, segment 0 has a marginally higher probability.
 
-## Phase 8 — Release
+---
 
-1. Build with Bun.
-2. Verify package contents via `npm pack`.
-3. Publish.
+## Additions
+
+### 7. `reset()` method on the engine
+
+No way to return to `"idle"` after `"stopped"`. Users must manually `setState(createInitialState(config))`.
+
+### 8. `spin:reset` event
+
+No lifecycle event for when the engine returns to idle — useful for UI cleanup.
+
+### 9. Promise-based `spin()` / `onComplete` callback
+
+No ergonomic way to `await` a spin. A `spin()` returning `Promise<SpinPlan>` would help non-animation use cases (server-side prize selection).
+
+### 10. `getWinningSegment()` convenience
+
+Users always do `segments[state.winningIndex!]`. A helper returning the `Segment<T>` or `null` would reduce boilerplate.
+
+### 11. Config validation at creation time
+
+No validation. `segments: []`, `durationMs: -100`, `minRotations: 10, maxRotations: 2`, `jitterFactor: 5` all silently produce broken behavior.
+
+### 12. `dispose` event
+
+No lifecycle event on `dispose()`. Adapters can't know when to clean up.
+
+### 13. Export `createSeededRng` and math utilities
+
+`createSeededRng`, `normalizeAngle`, `easeOutCubic`, etc. are useful for custom renderers but not exported from the core barrel.
+
+### 14. Built-in `requestAnimationFrame` tick loop
+
+Many users will write the same `rAF` → `tick(delta)` loop. A built-in `engine.start()` / `engine.stop()` with a browser guard (SSR safety) would be a common convenience.
+
+### 15. Svelte 5 runes adapter
+
+Current adapter uses `svelte/store` (Svelte 4). A Svelte 5 runes-based adapter using `$state` would modernize support.
+
+### 16. Vue adapter
+
+A `useRoulette` composable would round out framework support alongside React and Svelte.
+
+---
+
+## Refactors
+
+### 17. Internal config copy (relates to bug #1)
+
+All engine internals should work on a shallow copy so the caller's object stays clean.
+
+### 18. Persist RNG state across spins (relates to bug #2)
+
+Resolve the RNG once in `createRouletteEngine` and store the closure.
+
+### 19. Extract `resolveConfig()` helper
+
+Defaults are scattered across `state.ts` and re-resolved on every `planSpin`. Centralize into `resolveConfig(partial) → ResolvedRouletteConfig`.
+
+### 20. Defensive state snapshot in `emit`
+
+`emit` passes the `state` reference directly to listeners. While reassignment (not mutation) makes this safe today, a `{ ...snapshot }` copy would be more robust long-term.
+
+### 21. Test coverage gaps
+
+- No test for `dispose()` preventing further spins.
+- No test for `normalizeAngle` / `lerp` / `clamp` directly.
+- No test for `rotationDirection: -1` with the imperative engine.
+- No test for re-spinning while already `"spinning"`.
+- No test for negative `deltaMs` to `tick()`.
+- React and Svelte adapter tests are very thin (1 test each).
+
+### 22. Export `RouletteEventType` string literal union
+
+A standalone `type RouletteEventType = "spin:start" | "spin:tick" | "spin:complete"` would let consumers reference event types without string literals.

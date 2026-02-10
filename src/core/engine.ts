@@ -29,7 +29,8 @@ import { beginSpin, createInitialState, planSpin, step } from "./state";
  * - `subscribe(listener)`: listen to spin lifecycle events.
  * - `dispose()`: remove listeners and disable the engine.
  */
-export const createRouletteEngine = <T>(config: RouletteConfig<T>): RouletteEngine<T> => {
+export const createRouletteEngine = <T>(initialConfig: RouletteConfig<T>): RouletteEngine<T> => {
+    const config = { ...initialConfig };
     let state: RouletteState<T> = createInitialState(config);
     const listeners = new Set<(event: RouletteEvent<T>) => void>();
     let disposed = false;
@@ -45,8 +46,9 @@ export const createRouletteEngine = <T>(config: RouletteConfig<T>): RouletteEngi
     };
 
     const setSegments = (segments: RouletteConfig<T>["segments"]) => {
-        config.segments = segments;
-        state = { ...state, segments: [...segments] };
+        const copy = [...segments];
+        config.segments = copy;
+        state = { ...state, segments: copy };
     };
 
     const spin = (options: SpinOptions = {}): SpinPlan => {
