@@ -86,7 +86,8 @@ export type SpinPlan = {
 export type RouletteEvent<T = unknown> =
     | { type: "spin:start"; state: RouletteState<T> }
     | { type: "spin:tick"; state: RouletteState<T> }
-    | { type: "spin:complete"; state: RouletteState<T> };
+    | { type: "spin:complete"; state: RouletteState<T> }
+    | { type: "spin:reset"; state: RouletteState<T> };
 
 /** Imperative roulette engine interface. */
 export type RouletteEngine<T = unknown> = {
@@ -104,6 +105,8 @@ export type RouletteEngine<T = unknown> = {
     tick(deltaMs: number): RouletteState<T>;
     /** Subscribe to lifecycle events. */
     subscribe(listener: (event: RouletteEvent<T>) => void): () => void;
+    /** Reset the engine back to idle state. */
+    reset(): void;
     /** Dispose the engine and remove listeners. */
     dispose(): void;
 };

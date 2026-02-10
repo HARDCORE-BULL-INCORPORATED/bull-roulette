@@ -219,4 +219,64 @@ describe("roulette core", () => {
         const unique = new Set(winners);
         expect(unique.size).toBeGreaterThan(1);
     });
+
+    it("reset returns engine to idle after stopped", () => {
+        const engine = createRouletteEngine(baseConfig);
+        engine.spin({ targetIndex: 0, durationMs: 100, minRotations: 1, maxRotations: 1 });
+        engine.tick(100);
+        expect(engine.getState().phase).toBe("stopped");
+
+        engine.reset();
+        const state = engine.getState();
+        expect(state.phase).toBe("idle");
+        expect(state.winningIndex).toBeNull();
+        expect(state.targetAngle).toBeNull();
+        expect(state.elapsedMs).toBe(0);
+    });
+
+    it("reset emits spin:reset event", () => {
+        const engine = createRouletteEngine(baseConfig);
+        let resets = 0;
+        engine.subscribe((event) => {
+            if (event.type === "spin:reset") resets += 1;
+        });
+
+        engine.spin({ targetIndex: 0, durationMs: 100, minRotations: 1, maxRotations: 1 });
+        engine.tick(100);
+        engine.reset();
+        expect(resets).toBe(1);
+    });
+
+    it("reset preserves current segments", () => {
+        const engine = createRouletteEngine(baseConfig);
+        engine.setSegments([
+            { id: "x", weight: 1 },
+            { id: "y", weight: 2 },
+        ]);
+        engine.spin({ targetIndex: 0, durationMs: 100, minRotations: 1, maxRotations: 1 });
+        engine.tick(100);
+        engine.reset();
+        expect(engine.getState().segments).toEqual([
+            { id: "x", weight: 1 },
+            { id: "y", weight: 2 },
+        ]);
+    });
+
+    it("reset throws when engine is disposed", () => {
+        const engine = createRouletteEngine(baseConfig);
+        engine.dispose();
+        expect(() => engine.reset()).toThrow("Engine is disposed.");
+    });
+
+    it("reset allows spinning again", () => {
+        const engine = createRouletteEngine(baseConfig);
+        engine.spin({ targetIndex: 1, durationMs: 100, minRotations: 1, maxRotations: 1 });
+        engine.tick(100);
+        expect(engine.getState().phase).toBe("stopped");
+
+        engine.reset();
+        const plan = engine.spin({ targetIndex: 2 });
+        expect(plan.winningIndex).toBe(2);
+        expect(engine.getState().phase).toBe("spinning");
+    });
 });

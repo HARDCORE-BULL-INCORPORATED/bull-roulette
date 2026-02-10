@@ -36,13 +36,13 @@ The `readable` cleanup function calls `engine.dispose()`. If a Svelte component 
 
 ## Additions
 
-### 7. `reset()` method on the engine
+### 7. ~~`reset()` method on the engine~~ ✅
 
-No way to return to `"idle"` after `"stopped"`. Users must manually `setState(createInitialState(config))`.
+~~No way to return to `"idle"` after `"stopped"`. Users must manually `setState(createInitialState(config))`.~~
 
-### 8. `spin:reset` event
+### 8. ~~`spin:reset` event~~ ✅
 
-No lifecycle event for when the engine returns to idle — useful for UI cleanup.
+~~No lifecycle event for when the engine returns to idle — useful for UI cleanup.~~
 
 ### 9. Promise-based `spin()` / `onComplete` callback
 

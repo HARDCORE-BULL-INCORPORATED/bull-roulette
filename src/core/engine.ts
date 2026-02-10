@@ -27,6 +27,7 @@ import { beginSpin, createInitialState, planSpin, resolveRng, step } from "./sta
  * - `getState()` / `setState(state)`: read or replace state.
  * - `setSegments(segments)`: replace the segment list.
  * - `subscribe(listener)`: listen to spin lifecycle events.
+ * - `reset()`: return to idle state and emit `spin:reset`.
  * - `dispose()`: remove listeners and disable the engine.
  */
 export const createRouletteEngine = <T>(initialConfig: RouletteConfig<T>): RouletteEngine<T> => {
@@ -80,6 +81,12 @@ export const createRouletteEngine = <T>(initialConfig: RouletteConfig<T>): Roule
         return () => listeners.delete(listener);
     };
 
+    const reset = () => {
+        if (disposed) throw new Error("Engine is disposed.");
+        state = { ...createInitialState(config), segments: [...config.segments] };
+        emit("spin:reset", state);
+    };
+
     const dispose = () => {
         listeners.clear();
         disposed = true;
@@ -93,6 +100,7 @@ export const createRouletteEngine = <T>(initialConfig: RouletteConfig<T>): Roule
         stopAt,
         tick,
         subscribe,
+        reset,
         dispose,
     };
 };
