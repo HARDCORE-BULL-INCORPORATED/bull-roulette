@@ -6,6 +6,11 @@ import {
     planSpin,
     step,
     selectWeightedIndex,
+    normalizeAngle,
+    lerp,
+    clamp,
+    easeOutCubic,
+    FULL_ROTATION,
 } from "../src/core";
 import type { RouletteConfig } from "../src/core";
 
@@ -379,5 +384,327 @@ describe("roulette core", () => {
         });
         engine.dispose();
         expect(disposed).toBe(true);
+    });
+});
+
+describe("math utilities", () => {
+    describe("normalizeAngle", () => {
+        it("returns 0 for 0", () => {
+            expect(normalizeAngle(0)).toBe(0);
+        });
+
+        it("returns the same angle for values in [0, 360)", () => {
+            expect(normalizeAngle(90)).toBe(90);
+            expect(normalizeAngle(359.9)).toBeCloseTo(359.9, 5);
+        });
+
+        it("wraps 360 to 0", () => {
+            expect(normalizeAngle(360)).toBeCloseTo(0, 10);
+        });
+
+        it("wraps angles greater than 360", () => {
+            expect(normalizeAngle(450)).toBeCloseTo(90, 10);
+            expect(normalizeAngle(720)).toBeCloseTo(0, 10);
+        });
+
+        it("normalizes negative angles", () => {
+            expect(normalizeAngle(-90)).toBeCloseTo(270, 10);
+            expect(normalizeAngle(-360)).toBeCloseTo(0, 10);
+            expect(normalizeAngle(-450)).toBeCloseTo(270, 10);
+        });
+
+        it("handles very large angles", () => {
+            expect(normalizeAngle(3600)).toBeCloseTo(0, 10);
+            expect(normalizeAngle(3690)).toBeCloseTo(90, 10);
+        });
+    });
+
+    describe("lerp", () => {
+        it("returns start when t = 0", () => {
+            expect(lerp(10, 20, 0)).toBe(10);
+        });
+
+        it("returns end when t = 1", () => {
+            expect(lerp(10, 20, 1)).toBe(20);
+        });
+
+        it("returns midpoint when t = 0.5", () => {
+            expect(lerp(0, 100, 0.5)).toBe(50);
+        });
+
+        it("handles negative ranges", () => {
+            expect(lerp(-10, 10, 0.5)).toBe(0);
+        });
+
+        it("extrapolates when t > 1", () => {
+            expect(lerp(0, 10, 2)).toBe(20);
+        });
+
+        it("extrapolates when t < 0", () => {
+            expect(lerp(0, 10, -1)).toBe(-10);
+        });
+
+        it("works when start equals end", () => {
+            expect(lerp(5, 5, 0.5)).toBe(5);
+        });
+    });
+
+    describe("clamp", () => {
+        it("returns value when within range", () => {
+            expect(clamp(5, 0, 10)).toBe(5);
+        });
+
+        it("clamps to min when below range", () => {
+            expect(clamp(-5, 0, 10)).toBe(0);
+        });
+
+        it("clamps to max when above range", () => {
+            expect(clamp(15, 0, 10)).toBe(10);
+        });
+
+        it("returns min when value equals min", () => {
+            expect(clamp(0, 0, 10)).toBe(0);
+        });
+
+        it("returns max when value equals max", () => {
+            expect(clamp(10, 0, 10)).toBe(10);
+        });
+
+        it("works with negative ranges", () => {
+            expect(clamp(-5, -10, -1)).toBe(-5);
+            expect(clamp(0, -10, -1)).toBe(-1);
+            expect(clamp(-15, -10, -1)).toBe(-10);
+        });
+    });
+
+    describe("easeOutCubic", () => {
+        it("returns 0 when t = 0", () => {
+            expect(easeOutCubic(0)).toBe(0);
+        });
+
+        it("returns 1 when t = 1", () => {
+            expect(easeOutCubic(1)).toBe(1);
+        });
+
+        it("is monotonically increasing", () => {
+            let prev = easeOutCubic(0);
+            for (let t = 0.1; t <= 1.0; t += 0.1) {
+                const current = easeOutCubic(t);
+                expect(current).toBeGreaterThanOrEqual(prev);
+                prev = current;
+            }
+        });
+
+        it("starts fast and decelerates (ease-out shape)", () => {
+            // First half should cover more than half the distance
+            const halfway = easeOutCubic(0.5);
+            expect(halfway).toBeGreaterThan(0.5);
+        });
+    });
+
+    describe("FULL_ROTATION", () => {
+        it("equals 360", () => {
+            expect(FULL_ROTATION).toBe(360);
+        });
+    });
+});
+
+describe("dispose prevents further operations", () => {
+    it("spin() throws after dispose", () => {
+        const engine = createRouletteEngine(baseConfig);
+        engine.dispose();
+        expect(() => engine.spin()).toThrow("Engine is disposed.");
+    });
+
+    it("stopAt() throws after dispose", () => {
+        const engine = createRouletteEngine(baseConfig);
+        engine.dispose();
+        expect(() => engine.stopAt(0)).toThrow("Engine is disposed.");
+    });
+
+    it("spinAsync() throws after dispose", () => {
+        const engine = createRouletteEngine(baseConfig);
+        engine.dispose();
+        expect(() => engine.spinAsync()).toThrow("Engine is disposed.");
+    });
+
+    it("tick() returns stale state silently after dispose", () => {
+        const engine = createRouletteEngine(baseConfig);
+        engine.spin({ targetIndex: 0, durationMs: 1000, minRotations: 1, maxRotations: 1 });
+        const stateBeforeDispose = engine.getState();
+        engine.dispose();
+
+        // tick should not throw, but should not advance state
+        const stateAfterTick = engine.tick(100);
+        expect(stateAfterTick.angle).toBe(stateBeforeDispose.angle);
+        expect(stateAfterTick.elapsedMs).toBe(stateBeforeDispose.elapsedMs);
+    });
+
+    it("reset() throws after dispose", () => {
+        const engine = createRouletteEngine(baseConfig);
+        engine.dispose();
+        expect(() => engine.reset()).toThrow("Engine is disposed.");
+    });
+
+    it("subscribe() still works but no events are emitted after dispose", () => {
+        const engine = createRouletteEngine(baseConfig);
+        engine.dispose();
+        // Listeners were cleared on dispose, new subscriptions still possible
+        // but since spin/tick throw or no-op, no events fire
+        let events = 0;
+        engine.subscribe(() => {
+            events += 1;
+        });
+
+        // tick won't emit because disposed
+        engine.tick(100);
+        expect(events).toBe(0);
+    });
+
+    it("double dispose does not throw", () => {
+        const engine = createRouletteEngine(baseConfig);
+        engine.dispose();
+        expect(() => engine.dispose()).not.toThrow();
+    });
+});
+
+describe("rotationDirection: -1 with imperative engine", () => {
+    const reverseConfig: RouletteConfig = {
+        ...baseConfig,
+        rotationDirection: -1,
+        minRotations: 2,
+        maxRotations: 2,
+    };
+
+    it("angle decreases during spin", () => {
+        const engine = createRouletteEngine(reverseConfig);
+        engine.spin({ targetIndex: 1, durationMs: 500, minRotations: 2, maxRotations: 2 });
+
+        const initialAngle = engine.getState().angle;
+        engine.tick(100);
+        const midAngle = engine.getState().angle;
+
+        // With reverse rotation, the target angle is negative, so angle should decrease
+        expect(midAngle).toBeLessThan(initialAngle);
+    });
+
+    it("completes to the correct winning index", () => {
+        const engine = createRouletteEngine(reverseConfig);
+        const plan = engine.spin({
+            targetIndex: 2,
+            durationMs: 200,
+            minRotations: 1,
+            maxRotations: 1,
+        });
+
+        // Drive to completion
+        engine.tick(200);
+        expect(engine.getState().phase).toBe("stopped");
+        expect(engine.getState().winningIndex).toBe(2);
+        expect(plan.targetAngle).toBeLessThan(0);
+    });
+
+    it("emits lifecycle events with reverse rotation", () => {
+        const engine = createRouletteEngine(reverseConfig);
+        let starts = 0;
+        let completes = 0;
+        engine.subscribe((event) => {
+            if (event.type === "spin:start") starts += 1;
+            if (event.type === "spin:complete") completes += 1;
+        });
+
+        engine.spin({ targetIndex: 0, durationMs: 100, minRotations: 1, maxRotations: 1 });
+        engine.tick(100);
+
+        expect(starts).toBe(1);
+        expect(completes).toBe(1);
+    });
+});
+
+describe("re-spinning while already spinning", () => {
+    it("overwrites the current spin with a new one", () => {
+        const engine = createRouletteEngine(baseConfig);
+        engine.spin({ targetIndex: 0, durationMs: 1000, minRotations: 3, maxRotations: 3 });
+        engine.tick(100); // partially through spin
+
+        expect(engine.getState().phase).toBe("spinning");
+
+        // Re-spin mid-animation targeting a different segment
+        const newPlan = engine.spin({
+            targetIndex: 2,
+            durationMs: 500,
+            minRotations: 1,
+            maxRotations: 1,
+        });
+
+        expect(engine.getState().phase).toBe("spinning");
+        expect(engine.getState().winningIndex).toBe(2);
+        expect(newPlan.winningIndex).toBe(2);
+
+        // Drive to completion
+        engine.tick(500);
+        expect(engine.getState().phase).toBe("stopped");
+        expect(engine.getState().winningIndex).toBe(2);
+    });
+
+    it("emits spin:start for each spin call", () => {
+        const engine = createRouletteEngine(baseConfig);
+        let starts = 0;
+        engine.subscribe((event) => {
+            if (event.type === "spin:start") starts += 1;
+        });
+
+        engine.spin({ targetIndex: 0, durationMs: 1000, minRotations: 1, maxRotations: 1 });
+        engine.tick(100);
+        engine.spin({ targetIndex: 1, durationMs: 500, minRotations: 1, maxRotations: 1 });
+
+        expect(starts).toBe(2);
+    });
+
+    it("uses the mid-spin angle as the new start angle", () => {
+        const engine = createRouletteEngine(baseConfig);
+        engine.spin({ targetIndex: 0, durationMs: 1000, minRotations: 3, maxRotations: 3 });
+        engine.tick(200);
+
+        const midAngle = engine.getState().angle;
+        expect(midAngle).not.toBe(0); // Should have moved from initial
+
+        engine.spin({ targetIndex: 1, durationMs: 500, minRotations: 1, maxRotations: 1 });
+        expect(engine.getState().spinStartAngle).toBe(midAngle);
+    });
+});
+
+describe("negative deltaMs to tick", () => {
+    it("step clamps negative delta to 0 (no backward progress)", () => {
+        const config = { ...baseConfig, durationMs: 1000 };
+        const initial = createInitialState(config);
+        const plan = planSpin(initial, config, { targetIndex: 0 });
+        let state = beginSpin(initial, plan);
+
+        // Advance partially
+        state = step(state, config, 300);
+        expect(state.elapsedMs).toBe(300);
+
+        // Negative delta should not rewind
+        const stateAfterNeg = step(state, config, -100);
+        expect(stateAfterNeg.elapsedMs).toBe(300);
+    });
+
+    it("engine.tick with negative delta does not rewind", () => {
+        const engine = createRouletteEngine(baseConfig);
+        engine.spin({ targetIndex: 1, durationMs: 1000, minRotations: 1, maxRotations: 1 });
+        engine.tick(300);
+        const elapsed = engine.getState().elapsedMs;
+
+        engine.tick(-200);
+        expect(engine.getState().elapsedMs).toBe(elapsed);
+    });
+
+    it("engine.tick(0) does not advance", () => {
+        const engine = createRouletteEngine(baseConfig);
+        engine.spin({ targetIndex: 0, durationMs: 1000, minRotations: 1, maxRotations: 1 });
+        engine.tick(0);
+        expect(engine.getState().elapsedMs).toBe(0);
+        expect(engine.getState().phase).toBe("spinning");
     });
 });
