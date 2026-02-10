@@ -8,6 +8,7 @@ import type {
     SpinPlan,
 } from "./types";
 import { beginSpin, createInitialState, planSpin, resolveRng, step } from "./state";
+import { validateConfig, validateSpinOptions } from "./validation";
 
 /**
  * Create an imperative roulette engine instance.
@@ -32,6 +33,7 @@ import { beginSpin, createInitialState, planSpin, resolveRng, step } from "./sta
  * - `dispose()`: remove listeners and disable the engine.
  */
 export const createRouletteEngine = <T>(initialConfig: RouletteConfig<T>): RouletteEngine<T> => {
+    validateConfig(initialConfig);
     const config = { ...initialConfig };
     const rng = resolveRng(config);
     let state: RouletteState<T> = createInitialState(config);
@@ -49,6 +51,7 @@ export const createRouletteEngine = <T>(initialConfig: RouletteConfig<T>): Roule
     };
 
     const setSegments = (segments: RouletteConfig<T>["segments"]) => {
+        validateConfig({ segments });
         const copy = [...segments];
         config.segments = copy;
         state = { ...state, segments: copy };
@@ -56,6 +59,7 @@ export const createRouletteEngine = <T>(initialConfig: RouletteConfig<T>): Roule
 
     const spin = (options: SpinOptions = {}): SpinPlan => {
         if (disposed) throw new Error("Engine is disposed.");
+        validateSpinOptions(options, config);
         const plan = planSpin(state, config, options, rng);
         state = beginSpin(state, plan);
         emit("spin:start", state);

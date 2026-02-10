@@ -323,4 +323,51 @@ describe("roulette core", () => {
         engine.reset();
         expect(engine.getWinningSegment()).toBeNull();
     });
+
+    describe("validation", () => {
+        it("throws when segments is empty", () => {
+            expect(() => createRouletteEngine({ ...baseConfig, segments: [] })).toThrow(
+                "Roulette requires at least one segment.",
+            );
+        });
+
+        it("throws when durationMs is negative", () => {
+            expect(() => createRouletteEngine({ ...baseConfig, durationMs: -100 })).toThrow(
+                "durationMs must be non-negative.",
+            );
+            const engine = createRouletteEngine(baseConfig);
+            expect(() => engine.spin({ durationMs: -50 })).toThrow(
+                "durationMs must be non-negative.",
+            );
+        });
+
+        it("throws when minRotations > maxRotations", () => {
+            expect(() =>
+                createRouletteEngine({
+                    ...baseConfig,
+                    minRotations: 10,
+                    maxRotations: 2,
+                }),
+            ).toThrow("minRotations cannot be greater than maxRotations.");
+
+            const engine = createRouletteEngine(baseConfig);
+            expect(() => engine.spin({ minRotations: 10, maxRotations: 2 })).toThrow(
+                "minRotations cannot be greater than maxRotations.",
+            );
+        });
+
+        it("throws when jitterFactor is out of range", () => {
+            expect(() => createRouletteEngine({ ...baseConfig, jitterFactor: 5 })).toThrow(
+                "jitterFactor must be between 0 and 1.",
+            );
+            expect(() => createRouletteEngine({ ...baseConfig, jitterFactor: -0.1 })).toThrow(
+                "jitterFactor must be between 0 and 1.",
+            );
+        });
+
+        it("throws when setSegments is called with empty array", () => {
+            const engine = createRouletteEngine(baseConfig);
+            expect(() => engine.setSegments([])).toThrow("Roulette requires at least one segment.");
+        });
+    });
 });

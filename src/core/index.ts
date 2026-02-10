@@ -9,3 +9,4 @@ export type {
 } from "./types";
 export { createRouletteEngine } from "./engine";
 export { createInitialState, planSpin, beginSpin, step, selectWeightedIndex } from "./state";
+export { validateConfig, validateSpinOptions } from "./validation";

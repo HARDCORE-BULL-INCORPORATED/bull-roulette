@@ -1,6 +1,7 @@
 import type { RouletteConfig, RouletteState, Segment, SpinOptions, SpinPlan } from "./types";
 import { clamp, easeOutCubic, lerp, normalizeAngle, FULL_ROTATION } from "./math";
 import { createSeededRng } from "./rng";
+import { validateConfig, validateSpinOptions } from "./validation";
 
 const DEFAULT_DURATION_MS = 6000;
 const DEFAULT_MIN_ROTATIONS = 3;
@@ -106,10 +107,9 @@ export const planSpin = <T>(
     options: SpinOptions = {},
     resolvedRng?: () => number,
 ): SpinPlan => {
+    validateConfig(config);
+    validateSpinOptions(options, config);
     const segments = resolveSegments(state, config);
-    if (!segments.length) {
-        throw new Error("Roulette requires at least one segment.");
-    }
 
     const rng = resolvedRng ?? resolveRng(config);
     const minRotations = options.minRotations ?? config.minRotations ?? DEFAULT_MIN_ROTATIONS;
